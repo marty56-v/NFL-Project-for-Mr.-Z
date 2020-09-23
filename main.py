@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import numpy as np
 from openpyxl import *
+from openpyxl.styles import Font
+import getpass
 
 
 
@@ -80,10 +82,17 @@ while zLoopCount < 40:
   if (qbStats[0,zLoopCount] == None):
     break
   else:
+    colNumName = 1 #identifies column for Qb name
+    colNumPassYds = 2 #identifies column for pass yds
+    colNumPassTDs = 3 #identifies column for pass tds
+    colNumRushYds = 4 #identifies column for rush yds
+    colNumRushTDs = 5 #identifies column for rush tds
+    colNumFantPts = 6 #identifies column for fant pts
     TGREEN =  '\033[92m' # Green-ish Text
     TWHITE = '\033[37m' # White-ish Text
     TBLUE = '\033[94m' #blue text
     print(TGREEN + qbStats[0,zLoopCount], TWHITE)
+
     #fantasy pts calc
     fantPts = qbStats[1,zLoopCount]/25 + qbStats[2,zLoopCount] * 6 + qbStats[3,zLoopCount]/10 + qbStats[4,zLoopCount] * 6
     #round number to 1/100th
@@ -91,19 +100,52 @@ while zLoopCount < 40:
     #converted qbStats to a string in order to concatenate
     #print stats
     print(str(qbStats[1,zLoopCount]) + " pass yds")
+
     print(str(qbStats[2,zLoopCount])+" pass TDs")
     print(str(qbStats[3,zLoopCount])+" rush yds")
     print(str(qbStats[4,zLoopCount])+ " rush TDs")
     print(TBLUE +str(fantPts)+ " Total Pts", TGREEN)
     qbStats[5,zLoopCount] = fantPts
-    ####Will have to calculate the string below before converting to a string.###
-    # fantasy pts = passYds / 10 + passTDs * 6 + rushYds / 10 + rushTDs * 6
+
+
+    #puts the stats into the spreadsheet
+    ws.cell(row=zLoopCount+2, column=colNumName).value=qbStats[0,zLoopCount]
+    ws.cell(row=zLoopCount+2, column=colNumPassYds).value=qbStats[1,zLoopCount]
+    ws.cell(row = zLoopCount + 2, column = colNumPassTDs).value = qbStats[2,zLoopCount]   
+    ws.cell(row = zLoopCount + 2, column = colNumRushYds).value = qbStats[3,zLoopCount]
+    ws.cell(row = zLoopCount + 2, column = colNumRushTDs).value = qbStats[4,zLoopCount]    
+    ws.cell(row = zLoopCount+ 2, column = colNumFantPts).value = qbStats[5,zLoopCount]
+
     print("")
 
   zLoopCount += 1
 
   pass
 
-ws["A1"] = "hello"
-ws["B1"] = "world!"
-wb.save("nflFantasy.xlsx")
+#Headings for the columns
+fontObj = Font(name='Arial', size=12, bold=True)
+ws['A1'].font = fontObj
+ws["A1"] = "Name:"  
+ws['B1'].font = fontObj
+ws["B1"] = "Pass Yds:"  
+ws['C1'].font = fontObj
+ws['C1'] = "Pass TDs:"
+ws['D1'].font = fontObj
+ws['D1'] = "Rush Yds:"
+ws['E1'].font = fontObj
+ws['E1'] = "Rush TDs:"
+ws['F1'].font = fontObj
+ws['F1'] = "Fant Pts:"
+
+#Column width sizes should all be 25 and if you use any extra columns make them 25 (if you REALLY need to increase the width then change them all to be the same)
+ws.column_dimensions["A"].width = 25
+ws.column_dimensions["B"].width = 25
+ws.column_dimensions["C"].width = 25
+ws.column_dimensions["D"].width = 25
+ws.column_dimensions["E"].width = 25
+ws.column_dimensions["F"].width = 25
+
+##### SOMETHING REALLY IMPORTANT TO KNOW IS THAT REPL WILL NOT UPDATE THE SPREADSHEET UNLESS YOU RELOAD AND RUN THE PROGRAM OTHERWISE DOWNLOADING THE SPREADSHEET WILL NOT WORK!
+#wb.save("nflFantasy.xlsx")
+wb.save('/home/'+getpass.getuser()+'/Desktop/nflFantasy.xlsx')
+
